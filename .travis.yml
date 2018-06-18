@@ -16,7 +16,7 @@ before_script: |
     npm install -g eslint
     npm install
 script: |
-    npm test
+    npm test -- --coverage
 after_failure: |
     tail -n +1 -- /home/travis/.npm/_logs/*-debug.log
 sudo: required

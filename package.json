@@ -22,7 +22,7 @@
     "licchk": "license-check-and-add",
     "postlicchk": "npm run doc",
     "doc": "jsdoc --pedantic --recurse -c jsdoc.json",
-    "test": "CI=true nyc react-scripts test --env=jsdom"
+    "test": "CI=true nyc react-scripts test --env=jsdom --coverage"
   },
   "keywords": [
     "blockchain",
