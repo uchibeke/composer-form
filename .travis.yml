@@ -19,12 +19,6 @@ script: |
     npm test
 after_failure: |
     tail -n +1 -- /home/travis/.npm/_logs/*-debug.log
-after_success: npm run coverage
-deploy:
-    provider: script
-    skip_cleanup: true
-    on:
-        all_branches: true
 cache:
   directories:
     - node_modules
