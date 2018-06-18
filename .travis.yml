@@ -12,7 +12,10 @@ before_install: |
 install: |
     set -ev
     date
-script: 
+before_script: |
+    npm install -g eslint
+script: |
+    npm test
 after_failure: |
     tail -n +1 -- /home/travis/.npm/_logs/*-debug.log
 after_success: npm run coverage
@@ -31,8 +34,8 @@ notifications:
   webhooks:
     urls:
       - https://chat.hyperledger.org/hooks/BG3PeSerMSWRDSceE/GPCnCSqxMoyfqaTvLePSGudWjoCBwAcCT6bAKYRjK2sKSCM9
-    on_success: always # default: always
-    on_failure: always # default: always
-    on_start: always   # default: never
-    on_cancel: always # default: always
-    on_error: always # default: always
+    on_success: never # default: always
+    on_failure: never # default: always
+    on_start: never   # default: never
+    on_cancel: never # default: always
+    on_error: never # default: always
