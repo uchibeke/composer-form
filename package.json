@@ -15,7 +15,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "pretest": "npm run lint",
     "lint": "eslint .",
@@ -24,7 +23,9 @@
     "postlicchk": "npm run doc",
     "doc": "jsdoc --pedantic --recurse -c jsdoc.json",
     "mocha": "mocha --recursive -t 10000",
-    "nyc": "nyc mocha --recursive -t 10000"
+    "nyc": "nyc mocha --recursive -t 10000",
+    "test": "npm run nyc && npm run coverage",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "keywords": [
     "blockchain",
@@ -41,6 +42,7 @@
     "chai": "3.5.0",
     "chai-as-promised": "6.0.0",
     "chai-things": "0.2.0",
+    "coveralls": "^3.0.1",
     "eslint": "3.17.1",
     "jsdoc": "3.5.5",
     "license-check-and-add": "2.3.1",
@@ -48,7 +50,7 @@
     "mockery": "2.0.0",
     "moxios": "0.4.0",
     "nunjucks": "3.0.1",
-    "nyc": "11.1.0",
+    "nyc": "^11.1.0",
     "pegjs": "0.9.0",
     "rimraf": "2.5.4",
     "sinon": "2.3.8"
@@ -62,7 +64,13 @@
       "LICENSE.txt",
       "node_modules",
       ".nyc-output",
-      "out"
+      "out",
+      ".git",
+      "yarn.lock",
+      "yarn-error.log",
+      "README.md",
+      "src",
+      "public"
     ],
     "file_type_method": "EXCLUDE",
     "file_types": [
@@ -102,7 +110,13 @@
     ],
     "reporter": [
       "text-summary",
-      "html"
+      "html",
+      "cobertura",
+      "lcov",
+      "clover"
+    ],
+    "include": [
+      "src/**/*test.js"
     ],
     "all": true,
     "check-coverage": true,
