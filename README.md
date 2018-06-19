@@ -41,22 +41,6 @@ Hyperledger Composer: https://composer-playground.mybluemix.net
 
 - **Class Diagram Editor:** A functional web viewer, editor, or synchronised editor for CTO files, that can be easily embedded in a web application.
 
-## Eduction Level
-
-Graduate student or undergraduate student
-
-## Desirable Skills
-
-Models and meta-models (XSD, JSON Schema), Angular2 or React web development, HTML5, CSS
-
-## Level of Difficulty
-
-Medium
-
-## Preferred Hours and Length of Internship
-
-Full-time (40 hours a week for 12 weeks during the summer)
-
 ## Mentor(s)
 
-Dan Selman, dan@clause.io
+Dan Selman
