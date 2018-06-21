@@ -1,5 +1,3 @@
-![Hyperledger Composer Form](https://raw.githubusercontent.com/hyperledger/composer/master/packages/composer-website/jekylldocs/assets/img/Homepage_Illustration_2.png)
-
 # Hyperledger Composer Form
 
 Hyperledger Composer Form is a form generator for Hyperledger composer.
