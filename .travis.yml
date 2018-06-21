@@ -1,0 +1,34 @@
+language: node_js
+node_js:
+    - '8'
+matrix:
+    include:
+        - env: DOCS=full FC_TASK=docs
+dist: trusty
+addons:
+before_install: |
+    set -ev
+    date
+install: |
+    set -ev
+    date
+before_script: |
+    npm install -g lerna
+    npm install -g eslint
+    lerna bootstrap
+script: |
+    lerna run --scope composer-form test
+after_failure: |
+    tail -n +1 -- /home/travis/.npm/_logs/*-debug.log
+sudo: required
+notifications:
+  pushover:
+    api_key: ayq7zvsxc641sfna65njkik1x9y25b
+  webhooks:
+    urls:
+      - https://chat.hyperledger.org/hooks/BG3PeSerMSWRDSceE/GPCnCSqxMoyfqaTvLePSGudWjoCBwAcCT6bAKYRjK2sKSCM9
+    on_success: never # default: always
+    on_failure: never # default: always
+    on_start: never   # default: never
+    on_cancel: never # default: always
+    on_error: never # default: always
