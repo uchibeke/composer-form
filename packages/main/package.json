@@ -20,7 +20,8 @@
     "mocha": "mocha --recursive -t 10000",
     "nyc": "nyc mocha --recursive -t 10000",
     "doc": "jsdoc --pedantic --recurse -c jsdoc.json",
-    "test": "nyc mocha --recursive -t 10000"
+    "test": "nyc mocha --recursive -t 10000",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "keywords": [
     "blockchain",
@@ -106,10 +107,12 @@
       "html",
       "cobertura",
       "lcov",
-      "clover"
+      "clover",
+      "text-lcov",
+      "text"
     ],
     "include": [
-      "**/.js"
+      "lib/**.js"
     ],
     "all": true,
     "check-coverage": true,

@@ -29,39 +29,8 @@ describe('formgenerator Tests', function () {
             FormGenerator.should.not.be.null;
 
             // Check generator files
-            const form = FormGenerator.form();
-            console.log(await form);
-
-            //   let modelBase = fs.readFileSync(fileName, 'utf8')
-            //   modelBase.should.not.be.null
-            //   modelManager.addModelFile(modelBase, fileName)
-
-            //   // check functions can be retrieved
-            //   const modelFile = modelManager.getModelFile('org.acme.base')
-            //   modelFile.should.not.be.null
-
-            //   // check abstract classes are marked as abstract
-            //   const abstractAsset = modelManager.getType('org.acme.base.AbstractAsset')
-            //   abstractAsset.should.not.be.null
-            //   abstractAsset.isAbstract().should.be.true
-
-            //   // check we can get a concept
-            //   const addressConcept = modelManager.getType('org.acme.base.Address')
-            //   addressConcept.should.not.be.null
-            //   addressConcept.isAbstract().should.be.true
-
-            //   // check we can get a concept
-            //   const unitedStatesAddressConcept = modelManager.getType('org.acme.base.UnitedStatesAddress')
-            //   unitedStatesAddressConcept.should.not.be.null
-            //   unitedStatesAddressConcept.isAbstract().should.be.false
-
-            //   // check both concepts are registered
-            //   modelManager.getConceptDeclarations().length.should.equal(2)
-
-            //   // and vice-a-versa
-            //   const baseAsset = modelManager.getType('org.acme.base.BaseAsset')
-            //   baseAsset.should.not.be.null
-            //   baseAsset.isAbstract().should.be.false
+            // eslint-disable-next-line
+            const models = await FormGenerator.form();
         });
     });
 });

@@ -1772,6 +1772,12 @@ composer-common@^0.19.9:
     uuid "3.0.1"
     winston "2.3.1"
 
+composer-form@../main/:
+  version "0.1.0"
+  dependencies:
+    composer-common "^0.19.9"
+    debug "2.6.2"
+
 compressible@~2.0.13:
   version "2.0.14"
   resolved "https://registry.yarnpkg.com/compressible/-/compressible-2.0.14.tgz#326c5f507fbb055f54116782b969a81b67a29da7"
