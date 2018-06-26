@@ -15,13 +15,14 @@ install: |
 before_script: |
     npm install -g lerna
     npm install -g eslint
+    lerna clean
     lerna bootstrap
 script: |
-    lerna run --scope composer-form test
+    lerna run test
 after_failure: |
     tail -n +1 -- /home/travis/.npm/_logs/*-debug.log
 after_success: |
-    npm run coverage
+    lerna run coverage
 sudo: required
 notifications:
   pushover:
