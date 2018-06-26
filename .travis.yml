@@ -15,7 +15,6 @@ install: |
 before_script: |
     npm install -g lerna
     npm install -g eslint
-    lerna clean
     lerna bootstrap
 script: |
     lerna run test
