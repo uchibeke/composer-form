@@ -1,6 +1,4 @@
-# Hyperledger Composer Form
-
-Hyperledger Composer Form is a form generator for Hyperledger composer.
+# Hyperledger Composer Modelling Tools
 
 [![Coverage Status](https://coveralls.io/repos/github/uchibeke/composer-form/badge.svg?branch=master)](https://coveralls.io/github/uchibeke/composer-form?branch=master)
 
@@ -43,45 +41,22 @@ Hyperledger Composer: https://composer-playground.mybluemix.net
 
 - **Class Diagram Editor:** A functional web viewer, editor, or synchronised editor for CTO files, that can be easily embedded in a web application.
 
-For additional help with Hyperledger Composer the following are good places:
+## Eduction Level
 
-- Ask a question on [Stack Overflow](http://stackoverflow.com/questions/tagged/hyperledger-composer)
-- Chat on the Rocket.Chat [discussion channels](https://chat.hyperledger.org/channel/composer)
+Graduate student or undergraduate student
 
-# Contributing to Hyperledger Composer
+## Desirable Skills
 
-We welcome contributions to the code base. If you are interested in becoming a contributor, please read the [contributing guide](CONTRIBUTING.md) that covers the following:
+Models and meta-models (XSD, JSON Schema), Angular2 or React web development, HTML5, CSS
 
-- [getting started](/contrib-notes/getting-started.md)
-- [coding guidelines](/contrib-notes/coding-guidelines.md)
-- [raising an issue](/contrib-notes/raising-issues.md)
-- [submitting a pull request](/contrib-notes/submitting-pull-request.md)
+## Level of Difficulty
 
-There is a [specific channel](https://chat.hyperledger.org/channel/composer-dev) on RocketChat for contributors.
+Medium
 
-# Getting started with building an application with Hyperledger Composer
+## Preferred Hours and Length of Internship
 
-**Try the [online playground](https://composer-playground.mybluemix.net/) to get going quickly.**
+Full-time (40 hours a week for 12 weeks during the summer)
 
-Suggested reading list is:
+## Mentor(s)
 
-- [Introduction](https://hyperledger.github.io/composer/latest/introduction/introduction.html)
-- [Introduction Video](https://www.youtube.com/watch?v=fdFUsrsv5iw&t=23s)
-- [Quick Start](https://hyperledger.github.io/composer/latest/installing/installing-index.html)
-- [Tutorials](https://hyperledger.github.io/composer/latest/tutorials/tutorials.html)
-
-# Getting in touch
-
-If you have a *question on using Hyperledger Composer*
-  - Rocket.Chat [discussion channels](https://chat.hyperledger.org/channel/composer)
-  - [Stack Overflow](http://stackoverflow.com/questions/tagged/hyperledger-composer), where the question should be tagged with 'hyperledger-composer'.
-
-If you have found a defect or want to raise a feature requests
-  - All tracked on GitHub - please read [how to raise](./contrib-notes/raising-issues.md)
-
-If you want to contribute to the develop of Hyperledger Composer
-  - Come introduce yourself on the contributors [RocketChat channel](https://chat.hyperledger.org/channel/composer-dev)
-  - Please read the [contributing guide](./CONTRIBUTING.md)
-
-## License <a name="license"></a>
-Hyperledger Project source code files are made available under the Apache License, Version 2.0 (Apache-2.0), located in the LICENSE file. Hyperledger Project documentation files are made available under the Creative Commons Attribution 4.0 International License (CC-BY-4.0), available at http://creativecommons.org/licenses/by/4.0/.
+Dan Selman, dan@clause.io

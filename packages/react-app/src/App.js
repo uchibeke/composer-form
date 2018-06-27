@@ -12,16 +12,21 @@
  * limitations under the License.
  */
 
-import React, { Component } from 'react'
-import logo from './logo.svg'
-import './App.css'
-import constants from './constants'
-import FormBuilder from './components/FormBuilder/FormBuilder'
+import React, { Component } from 'react';
+import './App.css';
+import constants from './constants';
+import FormBuilder from './components/FormBuilder/FormBuilder';
+var fileName = require('./samples/models/bond.cto');
+const ComposerForm = require('composer-form');
+
+
 
 class App extends Component {
   state = {
     data: [],
-    current: {}
+    current: {},
+    modelFiles: null
+
   }
 
   onSubmit = (model) => {
@@ -50,8 +55,42 @@ class App extends Component {
     })
   }
 
+  componentDidMount () {
+    this.setupModels(fileName)
+  }
+
+  async setupModels (fileName) {
+      // fetch(fileName)
+      //     .then(response => {
+      //       console.log(response)
+      //       return response.text()
+      //     })
+      //     .then(text => {
+      //       console.log(text)
+      //       this.setState({
+      //         modelFiles: text
+      //       })
+
+      //       let modelManager = new ModelManager()
+      //       modelManager.addModelFile(text, undefined, true)
+      //       modelManager.updateExternalModels();
+      //       let modelFiles = modelManager.getModelFiles()
+      //       console.log(modelFiles)
+      //       this.setState({
+      //         modelFiles: modelFiles
+      //       })
+      //     })
+
+    const formGenerator = new ComposerForm.FormGenerator(fileName);
+    const models = await formGenerator.form();
+    this.setState({
+      modelFiles: models
+    })
+  }
+
   render() {
-    let data = this.state.data.map((d) => {
+    const {modelFiles} = this.state
+    const data = this.state.data.map((d) => {
       return (
         <tr key={d.id}>
             <td>{d.name}</td>
@@ -67,6 +106,7 @@ class App extends Component {
     });
     // TODO: Replace with model imported after prompting user for CML and url 
     const model = constants.model
+
     
     return (
       <div className="App">

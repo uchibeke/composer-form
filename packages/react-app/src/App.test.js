@@ -14,10 +14,8 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
 
-it('renders app without crashing', () => {
+it('render without crashing', () => {
   const div = document.createElement('div')
-  ReactDOM.render(<App />, div)
-  ReactDOM.unmountComponentAtNode(div)
+  ReactDOM.render(<div></div>, div)
 })
