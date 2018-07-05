@@ -8,6 +8,7 @@
   },
   "private": true,
   "dependencies": {
+    "composer-cli": "^0.19.11",
     "composer-common": "^0.19.9",
     "debug": "2.6.2"
   },

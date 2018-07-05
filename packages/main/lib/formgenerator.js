@@ -16,7 +16,9 @@
 
 const debug = require('debug')('hyperledger-composer');
 const fs = require('fs');
-const { ModelManager } = require('composer-common');
+const {
+  ModelManager
+} = require('composer-common');
 
 /**
  * Use the Factory to create instances of Resource: transactions, participants
@@ -27,41 +29,47 @@ const { ModelManager } = require('composer-common');
  */
 class FormGenerator {
   /**
-     * Create the FormGenerator.
-     *
-     * @param {String} fileName - the name (path) of the .cto file
-     * @private
-     */
-    constructor (fileName) {
+   * Create the FormGenerator.
+   *
+   * @param {String} fileName - the name (path) of the .cto file
+   * @private
+   */
+    constructor(fileName) {
         this.fileName = fileName;
     }
 
-    /**
-       * Import model from a file
-       * @private
-       * @return {modelFiles} the new reusable html form
-       */
-    async fetchModel () {
+  /**
+   * Import model from a file
+   * @private
+   * @return {modelFiles} the new reusable html form
+   */
+    async fetchModel() {
         const modelManager = new ModelManager();
         modelManager.clearModelFiles();
         let modelBase = fs.readFileSync(this.fileName, 'utf8');
         modelManager.addModelFile(modelBase, this.fileName, true);
         await modelManager.updateExternalModels();
         let modelFiles = modelManager.getModelFiles();
-
         debug('New Form created %s', modelFiles);
-        return modelFiles;
+
+        const namespaces = modelManager.getNamespaces();
+
+        // Try to to get types from one of the namespaces
+        const namespace = namespaces[1];
+        const types = modelManager.getType(namespace); // Breaks in this line
+
+        return types;
     }
 
-    /**
-       * Generates a new HTML form from a given model file
-       * @return {form} the new reusable html form
-       */
-    async form () {
-        const modelJson = this.fetchModel();
+  /**
+   * Generates a new HTML form from a given model file
+   * @return {form} the new reusable html form
+   */
+    async form() {
+        const types = await this.fetchModel();
 
-        // TODO keep working
-        let form = modelJson;
+    // TODO keep working
+        let form = types;
         return form;
     }
 }
