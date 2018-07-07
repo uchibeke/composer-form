@@ -19,9 +19,13 @@ const fs = require('fs');
 const {
   ModelManager
 } = require('composer-common');
+const forms = require('forms');
+const fields = forms.fields;
+const validators = forms.validators;
+let widgets = forms.widgets;
 
 /**
- * Use the Factory to create instances of Resource: transactions, participants
+ * Used to generate a web from from a given composer model. Accepts string or file
  * and assets.
  *
  * @class
@@ -31,46 +35,111 @@ class FormGenerator {
   /**
    * Create the FormGenerator.
    *
-   * @param {String} fileName - the name (path) of the .cto file
+   * @param {String} file - the name (path) of the .cto file or a string of the model
+   * @param {Array} primitiveTypes - An optional array of primitive types
+   * @param {Object} styles - Custom class names fo
    * @private
    */
-    constructor(fileName) {
-        this.fileName = fileName;
+    constructor(file, primitiveTypes = [], styles = {}) {
+        this.file = file;
+        this.model = null;
+        this.primitiveTypes = primitiveTypes.length < 1
+        ? ['Integer', 'Long', 'DateTime', 'String', 'Boolean', 'Double']
+        : primitiveTypes;
+        this.typeToFormElement = {
+            Integer: {
+                element: 'input',
+                type: 'number'
+            },
+            Long: {
+                element: 'input',
+                type: 'number'
+            },
+            DateTime: {
+                element: 'input',
+                type: 'date'
+            },
+            String: {
+                element: 'input',
+                type: 'text'
+            },
+            Boolean: {
+                element: 'input',
+                type: 'boolean'
+            },
+            Double: {
+                element: 'input',
+                type: 'number'
+            },
+        };
+        this.styles = styles;
     }
 
   /**
-   * Import model from a file
+   * Import model from a file or string
    * @private
-   * @return {modelFiles} the new reusable html form
+   * @return {props} the proporties of a composer type
    */
     async fetchModel() {
         const modelManager = new ModelManager();
         modelManager.clearModelFiles();
-        let modelBase = fs.readFileSync(this.fileName, 'utf8');
-        modelManager.addModelFile(modelBase, this.fileName, true);
+        let modelBase = fs.existsSync(this.file)
+            ? fs.readFileSync(this.file, 'utf8')
+            : this.file;
+        modelManager.addModelFile(modelBase, undefined, true);
         await modelManager.updateExternalModels();
         let modelFiles = modelManager.getModelFiles();
         debug('New Form created %s', modelFiles);
 
         const namespaces = modelManager.getNamespaces();
-
-        // Try to to get types from one of the namespaces
         const namespace = namespaces[1];
-        const types = modelManager.getType(namespace); // Breaks in this line
-
-        return types;
+        const typesInBond = modelManager.getType(namespace + '.Bond'); // Breaks in this line
+        const props = typesInBond.properties;
+        return props;
     }
 
   /**
-   * Generates a new HTML form from a given model file
+   * Generates a new HTML form from a given model file or string
    * @return {form} the new reusable html form
    */
     async form() {
-        const types = await this.fetchModel();
-
-    // TODO keep working
-        let form = types;
+        const props = await this.fetchModel();
+        let obj = {};
+        props.forEach((prop, key) => {
+            obj[prop.name] = fields.string(this.field(prop));
+        });
+        const formObject = forms.create(obj);
+        const form = `<form> ${formObject.toHTML()} </form>`;
         return form;
+    }
+
+  /**
+   * Generate a form field from the type property
+   *
+   * @param {Object} property - the object that defines the property and it's field type
+   * @return {Object} The form field meta data to be used to create a form
+   * @private
+   */
+    field(property) {
+        if (this.primitiveTypes.indexOf(property.type) > -1) {
+            const mapping = this.typeToFormElement[property.type];
+            const toRet = {
+                required: property.optional
+                    ? false
+                    : validators.required(`REQUIRED. Please, enter ${property.name}`),
+                widget: widgets[mapping.type]({
+                    classes: [this.styles.input],
+                    cssClasses: {
+                        label: [this.styles.label]
+                    }
+                })
+            };
+            return toRet;
+        } else {
+            // TODO: Handle non-primitives later
+            return {};
+        }
+
     }
 }
 
