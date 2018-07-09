@@ -14,113 +14,96 @@
 
 import React, { Component } from 'react';
 import './App.css';
-import constants from './constants';
-import FormBuilder from './components/FormBuilder/FormBuilder';
-var fileName = require('./samples/models/bond.cto');
-const ComposerForm = require('composer-form');
+// import constants from './constants';
+const apiEndpoint = 'http://localhost:7777/api/form';
+const customFormClass = {
+  field: 'form-group',
+  input: 'form-control',
+  label: 'control-label'
+}
 
 
 
 class App extends Component {
   state = {
-    data: [],
-    current: {},
-    modelFiles: null
-
-  }
-
-  onSubmit = (model) => {
-    let data = [];
-    if (model.id) {
-      data = this.state.data.filter((d) => {
-        return d.id != model.id
-      });
-    } else {
-      model.id = +new Date();
-      data = this.state.data.slice();
-    }
-    
-    this.setState({
-      data: [model, ...data]
-    });
-  }
-
-  onEdit = (id) => {
-    let record = this.state.data.find((d) => {
-      return d.id == id;
-    });
-    alert(JSON.stringify(record));
-    this.setState({
-      current: record
-    })
+    form: null
   }
 
   componentDidMount () {
-    this.setupModels(fileName)
+    // TODO: Replace with imported data from uploaded file or pasted model file content
+    const file = "namespace org.accordproject.finance.bond import org.accordproject.organization.Organization from https://models.accordproject.org/organization.cto import org.accordproject.time.Duration from https://models.accordproject.org/time.cto import org.accordproject.money.CurrencyCode from https://models.accordproject.org/money.cto enum CouponType { o FIXED o FLOATING } concept PaymentFrequency { o Integer periodMultiplier o Duration period } /** * Definition of a Bond, based on the FpML schema: * http://www.fpml.org/spec/fpml-5-3-2-wd-2/html/reporting/schemaDocumentation/schemas/fpml-asset-5-3_xsd/elements/bond.html * */ concept Bond { o String[] instrumentId o String description optional o CurrencyCode currency optional o String[] exchangeId o String clearanceSystem optional o String definition optional o String seniority optional o CouponType couponType optional o Double couponRate optional o DateTime maturity o Double parValue o Double faceAmount o PaymentFrequency paymentFrequency o String dayCountFraction --> Organization issuer } asset BondAsset identified by ISINCode { o String ISINCode o Bond bond }";     
+    this.getForm(file)
   }
 
-  async setupModels (fileName) {
-      // fetch(fileName)
-      //     .then(response => {
-      //       console.log(response)
-      //       return response.text()
-      //     })
-      //     .then(text => {
-      //       console.log(text)
-      //       this.setState({
-      //         modelFiles: text
-      //       })
-
-      //       let modelManager = new ModelManager()
-      //       modelManager.addModelFile(text, undefined, true)
-      //       modelManager.updateExternalModels();
-      //       let modelFiles = modelManager.getModelFiles()
-      //       console.log(modelFiles)
-      //       this.setState({
-      //         modelFiles: modelFiles
-      //       })
-      //     })
-
-    const formGenerator = new ComposerForm.FormGenerator(fileName);
-    const models = await formGenerator.form();
-    this.setState({
-      modelFiles: models
+  async getForm (file) {
+    console.log("here")
+    let body = {
+      file,
+      styles: customFormClass
+    }
+    // Call Api
+    fetch(apiEndpoint, {
+      method: 'POST',
+      headers: new Headers({
+                 'Accept': 'application/json',
+                 'Content-Type': 'application/json',
+        }),
+      body:JSON.stringify(body)
     })
+    .then((response) => response.text())
+    .then((form) => {
+      console.log(form)
+      this.setState({
+        form
+      })
+    })
+    .catch((err) => {
+      // Handle error
+      console.log(err)
+    });
   }
+  handleSubmit(event) {
+    alert('A name was submitted: ' + this.state.modelFile);
+    this.getForm (this.state.modelFile) 
+    event.preventDefault();
+  }
+  handleChange(event) {
+    this.setState({modelFile: event.target.value});
+  }
+
 
   render() {
-    const {modelFiles} = this.state
-    const data = this.state.data.map((d) => {
-      return (
-        <tr key={d.id}>
-            <td>{d.name}</td>
-            <td>{d.age}</td>
-            <td>{d.qualification}</td>
-            <td>{d.gender}</td>
-            <td>{d.rating}</td>
-            <td>{d.city}</td>
-            <td>{d.skills.join(",")}</td>
-            <td><button onClick={()=>{this.onEdit(d.id)}}>edit</button></td>
-        </tr>
-      );
-    });
-    // TODO: Replace with model imported after prompting user for CML and url 
-    const model = constants.model
+    const {form} = this.state
 
-    
     return (
-      <div className="App">
-        <FormBuilder className="form"
-          title = "Registration"
-          defaultValues = {this.state.current}
-          model={model}
-          onSubmit = {(model) => {this.onSubmit(model)}} 
-        />
-
-        <table border="1">
-          <tbody>{data}</tbody>
-        </table>
-
+      <div className="App container">
+        <div className="row">
+          <div className="col">
+              <link rel="stylesheet" 
+                href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
+                integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
+                crossOrigin="anonymous">
+              </link>
+              <form onSubmit={this.handleSubmit.bind(this)}>
+                <div className="form-group">
+                  <label className={customFormClass.label || 'control-label'}> Paste model file: </label>
+                  <textarea 
+                    value={this.state.modelFile} 
+                    onChange={this.handleChange.bind(this)}
+                    className={customFormClass.input || 'form-control Text-area'}
+                    placeholder="Does not yet work"/>
+                  <br></br>
+                  <input 
+                    type="submit" 
+                    value="Submit" 
+                    className={customFormClass.button || 'btn btn-primary'}/>
+                </div>
+              </form>
+              <hr></hr>
+              <div dangerouslySetInnerHTML={{ __html: form }}> 
+              </div>
+            </div>
+        </div>
       </div>
     );
   }

@@ -14,7 +14,6 @@ limitations under the License.
 
 
 .App {
-  text-align: center;
 }
 
 .App-logo {
@@ -40,4 +39,8 @@ limitations under the License.
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.Text-area {
+  height: 300px !important;
 }
