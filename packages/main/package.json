@@ -68,7 +68,8 @@
       ".git",
       "yarn.lock",
       "yarn-error.log",
-      "README.md"
+      "README.md",
+      "uchi/out/model.uml"
     ],
     "file_type_method": "EXCLUDE",
     "file_types": [

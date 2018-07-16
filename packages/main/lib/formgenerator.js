@@ -17,7 +17,9 @@
 const debug = require('debug')('hyperledger-composer');
 const fs = require('fs');
 const {
-  ModelManager
+  ModelManager,
+  TypescriptVisitor,
+  FileWriter
 } = require('composer-common');
 const forms = require('forms');
 const fields = forms.fields;
@@ -73,6 +75,8 @@ class FormGenerator {
             },
         };
         this.styles = styles;
+        this.modelManager = new ModelManager();
+        this.conceptDeclarations = [];
     }
 
   /**
@@ -81,21 +85,54 @@ class FormGenerator {
    * @return {props} the proporties of a composer type
    */
     async fetchModel() {
-        const modelManager = new ModelManager();
+        let {file, modelManager} = this;
         modelManager.clearModelFiles();
-        let modelBase = fs.existsSync(this.file)
-            ? fs.readFileSync(this.file, 'utf8')
-            : this.file;
+        let modelBase = fs.existsSync(file)
+            ? fs.readFileSync(file, 'utf8')
+            : file;
         modelManager.addModelFile(modelBase, undefined, true);
         await modelManager.updateExternalModels();
         let modelFiles = modelManager.getModelFiles();
         debug('New Form created %s', modelFiles);
 
+
+        const assetDcl = modelManager.getAssetDeclarations(false);
+        let fqns = [];
+        assetDcl.forEach((asset, key)=> {
+            fqns.push(asset.fqn);
+        });
+        this.conceptDeclarations = modelManager.getConceptDeclarations();
+        /**
+         * TODO
+         * STEPS:
+         * - First get asset declarations
+         * - Get properties from declaration
+         * - If a property is not a primitive type, get its declaration
+         * (Might contain and arbitariry num of non primitive declaration in each step )
+         * - Generate a form for each
+         *  - So in BondAsset we will have
+         */
+
         const namespaces = modelManager.getNamespaces();
         const namespace = namespaces[1];
-        const typesInBond = modelManager.getType(namespace + '.Bond'); // Breaks in this line
+        const typesInBond = modelManager.getType(namespace + '.Bond');
+        this.visit (typesInBond);
         const props = typesInBond.properties;
+        this.model = props;
         return props;
+    }
+
+
+  /**
+   * The visitor
+   * @param {string} decl - A class declaration
+   */
+    visit (decl) {
+        let visitor = new TypescriptVisitor ();
+        const param = {
+            fileWriter: new FileWriter('./uchi/out')
+        };
+        visitor.visitClassDeclaration(decl, param);
     }
 
   /**
@@ -103,10 +140,22 @@ class FormGenerator {
    * @return {form} the new reusable html form
    */
     async form() {
-        const props = await this.fetchModel();
+        await this.fetchModel();
+        const props = this.model;
         let obj = {};
         props.forEach((prop, key) => {
             obj[prop.name] = fields.string(this.field(prop));
+            // if (this.primitiveTypes.indexOf(prop.type) > -1)  {
+            //     obj[prop.name] = fields.string(this.field(prop));
+            // } else {
+            //     const {conceptDeclarations} = this;
+            //     const prop = conceptDeclarations.filter(function( obj ) {
+            //         return obj.name === prop.type;
+            //     })[0];
+            //     console.log(prop);
+            //     this.form(prop);
+
+            // }
         });
         const formObject = forms.create(obj);
         const form = `<form> ${formObject.toHTML()} </form>`;
@@ -121,26 +170,43 @@ class FormGenerator {
    * @private
    */
     field(property) {
+        const {typeToFormElement, styles} = this;
         if (this.primitiveTypes.indexOf(property.type) > -1) {
-            const mapping = this.typeToFormElement[property.type];
+            const mapping = typeToFormElement[property.type];
+            const formOpts = {
+                required: property.optional
+                        ? false
+                        : validators.required(`REQUIRED. Please, enter ${property.name}`),
+                widget: widgets[mapping.type]({
+                    classes: [styles.input]
+                }),
+                errorAfterField: true,
+                cssClasses: {
+                    label: [styles.label],
+                    field: [styles.field]
+                }
+            };
+            return this.field(formOpts);
+        } else {
+            // TODO: Handle non-primitives later. Set fields to text for now
             const toRet = {
                 required: property.optional
                     ? false
                     : validators.required(`REQUIRED. Please, enter ${property.name}`),
-                widget: widgets[mapping.type]({
-                    classes: [this.styles.input],
-                    cssClasses: {
-                        label: [this.styles.label]
-                    }
-                })
+                widget: widgets.text({
+                    classes: [styles.input]
+                }),
+                errorAfterField: true,
+                cssClasses: {
+                    label: [styles.label],
+                    field: [styles.field]
+                }
             };
             return toRet;
-        } else {
-            // TODO: Handle non-primitives later
-            return {};
         }
 
     }
+
 }
 
 module.exports = FormGenerator;
