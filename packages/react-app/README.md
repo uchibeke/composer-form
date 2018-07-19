@@ -6,7 +6,17 @@
 
 The Hyperledger Composer modelling language is used by both Hyperledger Composer and Accord Project Cicero as an object-oriented data description (schema) language, based on a textual domain-specific language. Both communities would benefit from improved tooling for the modelling language, including the ability to generate UML style diagrams and web-forms from class descriptions described using the Hyperledger Composer modelling language.
 
-## Two parts
+## Get started
+
+Repository is made up of 3 packages in the `packages` directory. The `main` package does the actual form generation. The other packages are interfaces for displaying the generated form.
+
+### Run project
+
+- Git clone this repo
+- In root directory, run `lerna bootstrap`
+- Start the react app by navigating to `packages/react-app` and run `yarn start`
+
+## Two parts of this project
 
 ### Class Diagram Viewer or Editor
 

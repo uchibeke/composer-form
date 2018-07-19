@@ -63,7 +63,6 @@ class App extends Component {
     });
   }
   handleSubmit(event) {
-    alert('A name was submitted: ' + this.state.modelFile);
     this.getForm (this.state.modelFile) 
     event.preventDefault();
   }

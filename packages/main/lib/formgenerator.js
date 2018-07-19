@@ -19,7 +19,7 @@ const fs = require('fs');
 const {
   ModelManager,
   TypescriptVisitor,
-  FileWriter
+  FileWriter,
 } = require('composer-common');
 const forms = require('forms');
 const fields = forms.fields;
@@ -77,63 +77,38 @@ class FormGenerator {
         this.styles = styles;
         this.modelManager = new ModelManager();
         this.conceptDeclarations = [];
-    }
-
-  /**
-   * Import model from a file or string
-   * @private
-   * @return {props} the proporties of a composer type
-   */
-    async fetchModel() {
-        let {file, modelManager} = this;
-        modelManager.clearModelFiles();
-        let modelBase = fs.existsSync(file)
-            ? fs.readFileSync(file, 'utf8')
-            : file;
-        modelManager.addModelFile(modelBase, undefined, true);
-        await modelManager.updateExternalModels();
-        let modelFiles = modelManager.getModelFiles();
-        debug('New Form created %s', modelFiles);
-
-
-        const assetDcl = modelManager.getAssetDeclarations(false);
-        let fqns = [];
-        assetDcl.forEach((asset, key)=> {
-            fqns.push(asset.fqn);
-        });
-        this.conceptDeclarations = modelManager.getConceptDeclarations();
-        /**
-         * TODO
-         * STEPS:
-         * - First get asset declarations
-         * - Get properties from declaration
-         * - If a property is not a primitive type, get its declaration
-         * (Might contain and arbitariry num of non primitive declaration in each step )
-         * - Generate a form for each
-         *  - So in BondAsset we will have
-         */
-
-        const namespaces = modelManager.getNamespaces();
-        const namespace = namespaces[1];
-        const typesInBond = modelManager.getType(namespace + '.Bond');
-        this.visit (typesInBond);
-        const props = typesInBond.properties;
-        this.model = props;
-        return props;
+        this.modelFile = null;
     }
 
 
   /**
-   * The visitor
-   * @param {string} decl - A class declaration
+   * The typescript code generator
+   * @param {Object} modelFiles - An array of model files
    */
-    visit (decl) {
+    generateCode (modelFiles) {
         let visitor = new TypescriptVisitor ();
         const param = {
-            fileWriter: new FileWriter('./uchi/out')
+            fileWriter: new FileWriter('./out/generated')
         };
-        visitor.visitClassDeclaration(decl, param);
+
+        modelFiles.forEach((file) => {
+            this.modelFile = file;
+            this.accept(visitor, param);
+        });
     }
+
+    /**
+     * Visitor design pattern
+     * @param {Object} visitor - the visitor
+     * @param {Object} parameters  - the parameter
+     * @param {Object} file  - the model file
+     * @return {Object} the result of visiting or null
+     * @private
+     */
+    accept(visitor, parameters, file) {
+        return visitor.visit(this.modelFile, parameters);
+    }
+
 
   /**
    * Generates a new HTML form from a given model file or string
@@ -205,6 +180,41 @@ class FormGenerator {
             return toRet;
         }
 
+    }
+
+    /**
+     * Import model from a file or string
+     * @private
+     * @return {props} the proporties of a composer type
+     */
+    async fetchModel() {
+        let {file, modelManager} = this;
+        modelManager.clearModelFiles();
+        let modelBase = fs.existsSync(file)
+              ? fs.readFileSync(file, 'utf8')
+              : file;
+        modelManager.addModelFile(modelBase, undefined, true);
+        await modelManager.updateExternalModels();
+        let modelFiles = modelManager.getModelFiles();
+        debug('New Form created %s', modelFiles);
+
+
+        const assetDcl = modelManager.getAssetDeclarations(false);
+        let fqns = [];
+        assetDcl.forEach((asset, key)=> {
+            fqns.push(asset.fqn);
+        });
+        this.conceptDeclarations = modelManager.getConceptDeclarations();
+
+        const namespaces = modelManager.getNamespaces();
+        const namespace = namespaces[1];
+        const typesInBond = modelManager.getType(namespace + '.Bond');
+
+        this.generateCode (modelFiles);
+
+        const props = typesInBond.properties;
+        this.model = props;
+        return props;
     }
 
 }
