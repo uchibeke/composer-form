@@ -18,14 +18,13 @@ const debug = require('debug')('hyperledger-composer');
 const fs = require('fs');
 const {
   ModelManager,
-  TypescriptVisitor,
   FileWriter,
 } = require('composer-common');
 const forms = require('forms');
 const fields = forms.fields;
 const validators = forms.validators;
 let widgets = forms.widgets;
-
+const {HTMLFormVisitor} = require('./htmlformvisitor');
 /**
  * Used to generate a web from from a given composer model. Accepts string or file
  * and assets.
@@ -86,9 +85,9 @@ class FormGenerator {
    * @param {Object} modelFiles - An array of model files
    */
     generateCode (modelFiles) {
-        let visitor = new TypescriptVisitor ();
+        let visitor = new HTMLFormVisitor ();
         const param = {
-            fileWriter: new FileWriter('./out/generated')
+            fileWriter: new FileWriter('./out/generated_2')
         };
 
         modelFiles.forEach((file) => {
@@ -101,11 +100,10 @@ class FormGenerator {
      * Visitor design pattern
      * @param {Object} visitor - the visitor
      * @param {Object} parameters  - the parameter
-     * @param {Object} file  - the model file
      * @return {Object} the result of visiting or null
      * @private
      */
-    accept(visitor, parameters, file) {
+    accept(visitor, parameters) {
         return visitor.visit(this.modelFile, parameters);
     }
 
@@ -120,17 +118,6 @@ class FormGenerator {
         let obj = {};
         props.forEach((prop, key) => {
             obj[prop.name] = fields.string(this.field(prop));
-            // if (this.primitiveTypes.indexOf(prop.type) > -1)  {
-            //     obj[prop.name] = fields.string(this.field(prop));
-            // } else {
-            //     const {conceptDeclarations} = this;
-            //     const prop = conceptDeclarations.filter(function( obj ) {
-            //         return obj.name === prop.type;
-            //     })[0];
-            //     console.log(prop);
-            //     this.form(prop);
-
-            // }
         });
         const formObject = forms.create(obj);
         const form = `<form> ${formObject.toHTML()} </form>`;
