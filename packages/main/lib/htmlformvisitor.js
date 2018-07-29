@@ -100,61 +100,12 @@ class HTMLFormVisitor {
      * @private
      */
     visitModelFile(modelFile, parameters) {
-
-        //  TODO: Instead of importing, write in same file
-
-
-
-        parameters.fileWriter.openFile(modelFile.getNamespace() + '.html');
-
-        // if this is not the system model file we have to import the system types
-        // so that they can be extended
-        if( !modelFile.isSystemModelFile() ) {
-            const systemTypes = modelFile.getModelManager().getSystemTypes();
-            systemTypes.forEach(systemType =>
-                parameters.fileWriter.writeLine(0, `import {${systemType.getName()}} from './org.hyperledger.composer.system';`));
-        }
-
-        // Import property types that are imported from other cto files.
-        const dot = '.';
-        const properties = new Map();
-        modelFile.getAllDeclarations()
-        .filter(v => !v.isEnum())
-        .forEach(classDeclaration => classDeclaration.getProperties().forEach(property => {
-            if(!property.isPrimitive()){
-                const fullyQualifiedTypeName = property.getFullyQualifiedTypeName();
-                const lastIndexOfDot = fullyQualifiedTypeName.lastIndexOf(dot);
-                const propertyNamespace =  fullyQualifiedTypeName.substring(0, lastIndexOfDot);
-                const propertyTypeName = fullyQualifiedTypeName.substring(lastIndexOfDot + 1);
-                if(!properties.has(propertyNamespace)) {
-                    properties.set(propertyNamespace, new Set());
-                }
-                properties.get(propertyNamespace).add(propertyTypeName);
-            }
-        }));
-
-        modelFile.getImports().map(importString => {
-            const lastIndexOfDot = importString.lastIndexOf(dot);
-            const namespace = importString.substring(0, lastIndexOfDot);
-            return namespace;
-        }).filter(namespace => namespace !== modelFile.getNamespace()) // Skip own namespace.
-        .filter((v, i, a) => a.indexOf(v) === i) // Remove any duplicates from direct imports
-        .forEach(namespace => {
-            const propertyTypeNames = properties.get(namespace);
-            if(propertyTypeNames){
-                const csvPropertyTypeNames = Array.from(propertyTypeNames).join();
-                parameters.fileWriter.writeLine(0, `import {${csvPropertyTypeNames}} from './${namespace}';`);
-            }
-        });
-
-        parameters.fileWriter.writeLine(0, '// export namespace ' + modelFile.getNamespace() + '{');
-
         modelFile.getAllDeclarations().forEach((decl) => {
             decl.accept(this, parameters);
         });
 
-        parameters.fileWriter.writeLine(0, '// }');
-        parameters.fileWriter.closeFile();
+        // parameters.fileWriter.writeLine(0, '// }');
+        // parameters.fileWriter.closeFile();
 
         return null;
     }
@@ -167,12 +118,12 @@ class HTMLFormVisitor {
      * @private
      */
     visitEnumDeclaration(enumDeclaration, parameters) {
-        const div = `<div class="${''}"id="${enumDeclaration.getName()}" >`;
+        const styles = parameters.customClasses;
+        const div = `<div  class='${styles.field}' id="form-${enumDeclaration.getName().toLowerCase()}" >`;
         const label = `<label for="${enumDeclaration.getName()}">${enumDeclaration.getName()}:</label>`;
         parameters.fileWriter.writeLine(1, div);
         parameters.fileWriter.writeLine(2, label);
         parameters.fileWriter.writeLine(2, '<select>');
-        // let formField;
         enumDeclaration.getOwnProperties().forEach((property) => {
             property.accept(this,parameters);
         });
@@ -189,16 +140,18 @@ class HTMLFormVisitor {
      * @private
      */
     visitClassDeclaration(classDeclaration, parameters) {
+        if(!classDeclaration.isSystemType()){
+            const form = `<h3>${classDeclaration.getName()}</h3>
+            <form name="${classDeclaration.getName()}" id="form-${classDeclaration.getName().toLowerCase()}">`;
 
-        const form = `<form name=${classDeclaration.getName()}>`;
+            parameters.fileWriter.writeLine(0, form );
 
-        parameters.fileWriter.writeLine(0, form );
+            classDeclaration.getOwnProperties().forEach((property) => {
+                property.accept(this,parameters);
+            });
 
-        classDeclaration.getOwnProperties().forEach((property) => {
-            property.accept(this,parameters);
-        });
-
-        parameters.fileWriter.writeLine(0, '</form>' );
+            parameters.fileWriter.writeLine(0, '</form>' );
+        }
         return null;
     }
 
@@ -210,19 +163,16 @@ class HTMLFormVisitor {
      * @private
      */
     visitField(field, parameters) {
-        const div = `<div class="${''}">`;
+        const styles = parameters.customClasses;
+        const div = `<div class="${styles.field}">`;
         const label = `<label for="${field.getName()}">${field.getName()}:</label>`;
         let formField;
         if (field.isPrimitive()) {
-            formField = `<input type="${this.toFieldType(field.getType())}" class="${''}" id="${field.getName()}">`;
+            formField = `<input type="${this.toFieldType(field.getType())}" class="${styles.input}" id="${field.getName()}">`;
 
         }
         if (!field.isPrimitive()) {
-            const fqtn = field.getFullyQualifiedTypeName();
-            const lInd = fqtn.lastIndexOf('.');
-            let path = fqtn.substring(0, lInd + 1);
-            const id = fqtn.substring(lInd + 1, fqtn.length);
-            formField = `<a href="${path}html#${id}">${field.getName()}</a>`;
+            formField = `<a href="${'#form-'+field.getName().toLowerCase()}">${field.getName()}</a>`;
         }
         parameters.fileWriter.writeLine(1, div);
         parameters.fileWriter.writeLine(2, label);
@@ -252,9 +202,10 @@ class HTMLFormVisitor {
      * @private
      */
     visitRelationship(relationship, parameters) {
+        const styles = parameters.customClasses;
         const div = `<div class="${''}">`;
         const label = `<label for="${relationship.getName()}">${relationship.getName()}:</label>`;
-        let formField = `<input type="${this.toFieldType(relationship.getType())}" class="${''}" id="${relationship.getName()}">`;
+        let formField = `<input type="${this.toFieldType(relationship.getType())}" class='${styles.input}' id="${relationship.getName()}">`;
 
 
         parameters.fileWriter.writeLine(1, div);

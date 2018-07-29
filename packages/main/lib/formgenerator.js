@@ -1,46 +1,41 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 'use strict';
 
 const debug = require('debug')('hyperledger-composer');
 const fs = require('fs');
-const {
-  ModelManager,
-  FileWriter,
-} = require('composer-common');
-const forms = require('forms');
-const fields = forms.fields;
-const validators = forms.validators;
-let widgets = forms.widgets;
+const axios = require('axios');
+const ModelManager = require('composer-common').ModelManager;
+const Writer = require('composer-common').Writer;
 const {HTMLFormVisitor} = require('./htmlformvisitor');
 /**
- * Used to generate a web from from a given composer model. Accepts string or file
- * and assets.
- *
- * @class
- * @memberof module:composer-form
- */
+* Used to generate a web from from a given composer model. Accepts string or file
+* and assets.
+*
+* @class
+* @memberof module:composer-form
+*/
 class FormGenerator {
-  /**
-   * Create the FormGenerator.
-   *
-   * @param {String} file - the name (path) of the .cto file or a string of the model
-   * @param {Array} primitiveTypes - An optional array of primitive types
-   * @param {Object} styles - Custom class names fo
-   * @private
-   */
+    /**
+    * Create the FormGenerator.
+    *
+    * @param {String} file - the name (path) of the .cto file or a string of the model
+    * @param {Array} primitiveTypes - An optional array of primitive types
+    * @param {Object} styles - Custom class names fo
+    * @private
+    */
     constructor(file, primitiveTypes = [], styles = {}) {
         this.file = file;
         this.model = null;
@@ -79,129 +74,85 @@ class FormGenerator {
         this.modelFile = null;
     }
 
-
-  /**
-   * The typescript code generator
-   * @param {Object} modelFiles - An array of model files
-   */
-    generateCode (modelFiles) {
-        let visitor = new HTMLFormVisitor ();
-        const param = {
-            fileWriter: new FileWriter('./out/generated_2')
-        };
-
-        modelFiles.forEach((file) => {
-            this.modelFile = file;
-            this.accept(visitor, param);
-        });
-    }
-
     /**
-     * Visitor design pattern
-     * @param {Object} visitor - the visitor
-     * @param {Object} parameters  - the parameter
-     * @return {Object} the result of visiting or null
-     * @private
-     */
+    * Visitor design pattern
+    * @param {Object} visitor - the visitor
+    * @param {Object} parameters  - the parameter
+    * @return {Object} the result of visiting or null
+    * @private
+    */
     accept(visitor, parameters) {
         return visitor.visit(this.modelFile, parameters);
     }
 
-
-  /**
-   * Generates a new HTML form from a given model file or string
-   * @return {form} the new reusable html form
-   */
-    async form() {
-        await this.fetchModel();
-        const props = this.model;
-        let obj = {};
-        props.forEach((prop, key) => {
-            obj[prop.name] = fields.string(this.field(prop));
-        });
-        const formObject = forms.create(obj);
-        const form = `<form> ${formObject.toHTML()} </form>`;
-        return form;
-    }
-
-  /**
-   * Generate a form field from the type property
-   *
-   * @param {Object} property - the object that defines the property and it's field type
-   * @return {Object} The form field meta data to be used to create a form
-   * @private
-   */
-    field(property) {
-        const {typeToFormElement, styles} = this;
-        if (this.primitiveTypes.indexOf(property.type) > -1) {
-            const mapping = typeToFormElement[property.type];
-            const formOpts = {
-                required: property.optional
-                        ? false
-                        : validators.required(`REQUIRED. Please, enter ${property.name}`),
-                widget: widgets[mapping.type]({
-                    classes: [styles.input]
-                }),
-                errorAfterField: true,
-                cssClasses: {
-                    label: [styles.label],
-                    field: [styles.field]
-                }
-            };
-            return this.field(formOpts);
-        } else {
-            // TODO: Handle non-primitives later. Set fields to text for now
-            const toRet = {
-                required: property.optional
-                    ? false
-                    : validators.required(`REQUIRED. Please, enter ${property.name}`),
-                widget: widgets.text({
-                    classes: [styles.input]
-                }),
-                errorAfterField: true,
-                cssClasses: {
-                    label: [styles.label],
-                    field: [styles.field]
-                }
-            };
-            return toRet;
-        }
-
+    /**
+    * Create a template from an URL.
+    * @param {String} path  - the path to a file
+    * @param {object} options - additional options
+    * @return {String} a composer business network file
+    */
+    static async fromFile(path, options) {
+        const model = await fs.readFileSync(path, 'utf8');
+        return FormGenerator.generateHTML(model, options);
     }
 
     /**
-     * Import model from a file or string
-     * @private
-     * @return {props} the proporties of a composer type
-     */
-    async fetchModel() {
-        let {file, modelManager} = this;
+    * Create a template from an URL.
+    * @param {String} url  - the URL to a zip or cto archive
+    * @param {object} options - additional options
+    * @return {Promise} a Promise to the instantiated business network
+    */
+    static async fromUrl(url, options) {
+        const request = {};
+        request.url = url;
+        request.method = 'get';
+        request.responseType = 'arraybuffer'; // Necessary for binary archives
+        request.timeout = 5000;
+        return await axios(request)
+    .then((response) => {
+        return response.data;
+    }).catch(function (error) {
+        if (error.response) {
+            throw new Error('Request to URL ['+ url +'] returned with error code: ' + error.response.status);
+        } else if (error.request) {
+            throw new Error('Server did not respond for URL ['+ url +']');
+        } else {
+            throw new Error('Error when accessing URL ['+ url +'] ' + error.message);
+        }
+    });
+    }
+
+    /**
+    * The typescript code generator
+    * @private
+    * @param {Object} model - The business network model text
+    * @param {Object} options - form options
+    * @return {String} the generated HTML string
+    */
+    static async generateHTML (model, options) {
+        let modelManager = new ModelManager();
         modelManager.clearModelFiles();
-        let modelBase = fs.existsSync(file)
-              ? fs.readFileSync(file, 'utf8')
-              : file;
-        modelManager.addModelFile(modelBase, undefined, true);
-        await modelManager.updateExternalModels();
-        let modelFiles = modelManager.getModelFiles();
+
+        modelManager.addModelFile(model, undefined, true);
+        modelManager.updateExternalModels();
+        const modelFiles = modelManager.getModelFiles();
         debug('New Form created %s', modelFiles);
 
 
-        const assetDcl = modelManager.getAssetDeclarations(false);
-        let fqns = [];
-        assetDcl.forEach((asset, key)=> {
-            fqns.push(asset.fqn);
+        let visitor = new HTMLFormVisitor ();
+        const param = {
+            fileWriter: new Writer(),
+            customClasses: options.customClasses
+        };
+
+        await modelFiles.forEach((file) => {
+            modelManager.modelFile = file;
+            modelManager.accept(visitor, param);
+            const text = param.fileWriter.getBuffer();
+            fs.writeFileSync('out/xxxx.html', text);
+
         });
-        this.conceptDeclarations = modelManager.getConceptDeclarations();
-
-        const namespaces = modelManager.getNamespaces();
-        const namespace = namespaces[1];
-        const typesInBond = modelManager.getType(namespace + '.Bond');
-
-        this.generateCode (modelFiles);
-
-        const props = typesInBond.properties;
-        this.model = props;
-        return props;
+        return param.fileWriter.getBuffer();
     }
 
 }
