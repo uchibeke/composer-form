@@ -17,12 +17,18 @@ import './App.css';
 // import constants from './constants';
 // const FormGenerator = require('composer-form');
 import {FormGenerator} from 'composer-form'
-const apiEndpoint = 'http://localhost:7777/api/form';
-const customFormClass = {
-  field: 'form-group',
-  input: 'form-control',
-  label: 'control-label'
-}
+import {Tabs, Tab} from 'react-bootstrap-tabs'
+
+
+const options = {
+    customClasses : {
+        field: 'form-group',
+        input: 'form-control',
+        label: 'control-label'
+    }
+
+};
+
 
 
 
@@ -32,86 +38,100 @@ class App extends Component {
   }
 
   componentDidMount () {
-    // TODO: Replace with imported data from uploaded file or pasted model file content
-    const file = "namespace org.accordproject.finance.bond import org.accordproject.organization.Organization from https://models.accordproject.org/organization.cto import org.accordproject.time.Duration from https://models.accordproject.org/time.cto import org.accordproject.money.CurrencyCode from https://models.accordproject.org/money.cto enum CouponType { o FIXED o FLOATING } concept PaymentFrequency { o Integer periodMultiplier o Duration period } /** * Definition of a Bond, based on the FpML schema: * http://www.fpml.org/spec/fpml-5-3-2-wd-2/html/reporting/schemaDocumentation/schemas/fpml-asset-5-3_xsd/elements/bond.html * */ concept Bond { o String[] instrumentId o String description optional o CurrencyCode currency optional o String[] exchangeId o String clearanceSystem optional o String definition optional o String seniority optional o CouponType couponType optional o Double couponRate optional o DateTime maturity o Double parValue o Double faceAmount o PaymentFrequency paymentFrequency o String dayCountFraction --> Organization issuer } asset BondAsset identified by ISINCode { o String ISINCode o Bond bond }";     
-    
-    const localFile = './samples/models/bond.cto';
-    const options = {
-        customClasses : {
-            field: 'form-group',
-            input: 'form-control',
-            label: 'control-label'
-        }
-
-    };
-    const form = FormGenerator.fromFile(localFile, options);
-    this.getForm(file)
   }
 
-  async getForm (file) {
+  async form (file, options, type) {
     console.log("here")
-    let body = {
-      file,
-      styles: customFormClass
+    let form;
+    if  (type === 'text') {
+      form = await FormGenerator.fromText(file, options);
+    } else if (type === 'url') {
+      form = await FormGenerator.fromUrl(file, options);
     }
-    // Call Api
-    fetch(apiEndpoint, {
-      method: 'POST',
-      headers: new Headers({
-                 'Accept': 'application/json',
-                 'Content-Type': 'application/json',
-        }),
-      body:JSON.stringify(body)
+    this.setState({
+      form
     })
-    .then((response) => response.text())
-    .then((form) => {
-      console.log(form)
-      this.setState({
-        form
-      })
-    })
-    .catch((err) => {
-      // Handle error
-      console.log(err)
-    });
   }
-  handleSubmit(event) {
-    this.getForm (this.state.modelFile) 
+
+  async handleTextAreaSubmit(event) {
+    this.form(this.state.modelFile, options, 'text')
     event.preventDefault();
   }
-  handleChange(event) {
+  
+  handleTextAreaChange(event) {
     this.setState({modelFile: event.target.value});
+  }
+
+  async handleUrlSubmit(event) {
+    this.form(this.state.modelUrl, options, 'url')
+    event.preventDefault();
+  }
+  
+  handleUrlChange(event) {
+    this.setState({modelUrl: event.target.value});
   }
 
 
   render() {
     const {form} = this.state
+    const {customClasses} = options
 
     return (
       <div className="App container">
         <div className="row">
           <div className="col">
-              <link rel="stylesheet" 
-                href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
-                integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
-                crossOrigin="anonymous">
-              </link>
-              <form onSubmit={this.handleSubmit.bind(this)}>
-                <div className="form-group">
-                  <label className={customFormClass.label || 'control-label'}> Paste model file: </label>
-                  <textarea 
-                    value={this.state.modelFile} 
-                    onChange={this.handleChange.bind(this)}
-                    className={customFormClass.input || 'form-control Text-area'}
-                    placeholder="Does not yet work"/>
+          <br></br>
+              
+              <Tabs
+                headerStyle={{background:'#efefef'}} activeHeaderStyle={{background: 'white', 'border-top':'2px solid blue'}}
+              >
+                <Tab  
+                  label="Paste model file"
+                >
                   <br></br>
-                  <input 
-                    type="submit" 
-                    value="Submit" 
-                    className={customFormClass.button || 'btn btn-primary'}/>
-                </div>
-              </form>
+                  <form onSubmit={this.handleTextAreaSubmit.bind(this)}>
+                    <div className="form-group">
+                      <textarea 
+                        value={this.state.modelFile} 
+                        onChange={this.handleTextAreaChange.bind(this)}
+                        className={'form-control Text-area'}
+                        placeholder="Paste a model file"/>
+                      <br></br>
+                      <input 
+                        type="submit" 
+                        value="Submit" 
+                        className={customClasses.button || 'btn btn-primary'}/>
+                    </div>
+                  </form>
+                </Tab>
+                <Tab
+                  label="Enter the url for .cto file"
+                >
+                  <br></br>
+                  <form onSubmit={this.handleUrlSubmit.bind(this)}>
+                    <div className="form-group">
+                      <input 
+                        value={this.state.modelUrl} 
+                        onChange={this.handleUrlChange.bind(this)}
+                        className={'form-control'}
+                        placeholder="https://"/>
+                      <br></br>
+                      <input 
+                        type="submit" 
+                        value="Submit" 
+                        className={customClasses.button || 'btn btn-primary'}/>
+                    </div>
+                  </form>
+                </Tab>
+                <Tab
+                  label="Upload model file"
+                  disabled
+                >
+                  Currently disabled
+                </Tab>
+              </Tabs>
               <hr></hr>
+              <h2>Form</h2>
               <div dangerouslySetInnerHTML={{ __html: form }}> 
               </div>
             </div>

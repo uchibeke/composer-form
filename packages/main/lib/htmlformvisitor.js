@@ -119,7 +119,8 @@ class HTMLFormVisitor {
      */
     visitEnumDeclaration(enumDeclaration, parameters) {
         const styles = parameters.customClasses;
-        const div = `<div  class='${styles.field}' id="form-${enumDeclaration.getName().toLowerCase()}" >`;
+        const id = enumDeclaration.getName().toLowerCase() + '-' + parameters.timestamp;
+        const div = `<div  class='${styles.field}' id="form-${id}" >`;
         const label = `<label for="${enumDeclaration.getName()}">${enumDeclaration.getName()}:</label>`;
         parameters.fileWriter.writeLine(1, div);
         parameters.fileWriter.writeLine(2, label);
@@ -140,9 +141,11 @@ class HTMLFormVisitor {
      * @private
      */
     visitClassDeclaration(classDeclaration, parameters) {
-        if(!classDeclaration.isSystemType()){
-            const form = `<h3>${classDeclaration.getName()}</h3>
-            <form name="${classDeclaration.getName()}" id="form-${classDeclaration.getName().toLowerCase()}">`;
+        if(!classDeclaration.isSystemType() &&
+        !classDeclaration.isAbstract()) {
+            const id = classDeclaration.getName().toLowerCase() + '-' + parameters.timestamp;
+            const form = `<h4>${classDeclaration.getName()}</h4>
+            <form name="${classDeclaration.getName()}" id="form-${id}">`;
 
             parameters.fileWriter.writeLine(0, form );
 
@@ -172,7 +175,9 @@ class HTMLFormVisitor {
 
         }
         if (!field.isPrimitive()) {
-            formField = `<a href="${'#form-'+field.getName().toLowerCase()}">${field.getName()}</a>`;
+            const id = field.getType().toLowerCase();
+            const url = '#form-'+ id + '-' + parameters.timestamp;
+            formField = `<a href="${url}">${field.getName()}</a>`;
         }
         parameters.fileWriter.writeLine(1, div);
         parameters.fileWriter.writeLine(2, label);

@@ -13,8 +13,8 @@
 */
 
 'use strict';
-const fs = require('fs');
 const axios = require('axios');
+const fs = require('fs');
 const ModelManager = require('composer-common').ModelManager;
 const Writer = require('composer-common').Writer;
 const {HTMLFormVisitor} = require('./htmlformvisitor');
@@ -29,46 +29,14 @@ class FormGenerator {
     /**
     * Create the FormGenerator.
     *
-    * @param {String} file - the name (path) of the .cto file or a string of the model
-    * @param {Array} primitiveTypes - An optional array of primitive types
-    * @param {Object} styles - Custom class names fo
+    * @param {String} modelFileContent - the name (path) of the .cto file or a string of the model
+    * @param {Object} options - form options
     * @private
     */
-    constructor(file, primitiveTypes = [], styles = {}) {
-        this.file = file;
-        this.model = null;
-        this.primitiveTypes = primitiveTypes.length < 1
-        ? ['Integer', 'Long', 'DateTime', 'String', 'Boolean', 'Double']
-        : primitiveTypes;
-        this.typeToFormElement = {
-            Integer: {
-                element: 'input',
-                type: 'number'
-            },
-            Long: {
-                element: 'input',
-                type: 'number'
-            },
-            DateTime: {
-                element: 'input',
-                type: 'date'
-            },
-            String: {
-                element: 'input',
-                type: 'text'
-            },
-            Boolean: {
-                element: 'input',
-                type: 'boolean'
-            },
-            Double: {
-                element: 'input',
-                type: 'number'
-            },
-        };
-        this.styles = styles;
+    constructor(modelFileContent, options) {
         this.modelManager = new ModelManager();
-        this.conceptDeclarations = [];
+        this.model = modelFileContent;
+        this.options = options;
         this.modelFile = null;
     }
 
@@ -96,6 +64,16 @@ class FormGenerator {
 
     /**
     * Create a template from an URL.
+    * @param {String} text  - the model
+    * @param {object} options - additional options
+    * @return {String} a composer business network file
+    */
+    static async fromText(text, options) {
+        return FormGenerator.generateHTML(text, options);
+    }
+
+    /**
+    * Create a template from an URL.
     * @param {String} url  - the URL to a zip or cto archive
     * @param {object} options - additional options
     * @return {Promise} a Promise to the instantiated business network
@@ -104,20 +82,55 @@ class FormGenerator {
         const request = {};
         request.url = url;
         request.method = 'get';
-        request.responseType = 'arraybuffer'; // Necessary for binary archives
+        request.responseType = 'text';
         request.timeout = 5000;
-        return await axios(request)
-    .then((response) => {
-        return response.data;
-    }).catch(function (error) {
-        if (error.response) {
-            throw new Error('Request to URL ['+ url +'] returned with error code: ' + error.response.status);
-        } else if (error.request) {
-            throw new Error('Server did not respond for URL ['+ url +']');
-        } else {
-            throw new Error('Error when accessing URL ['+ url +'] ' + error.message);
+
+        try {
+            const response = await axios(request);
+            let text = await response.data.toString('utf8');
+            return this.generateHTML(text, options);
+        } catch (error) {
+            if (error.response) {
+                throw new Error('Request to URL ['+ url +'] returned with error code: ' + error.response.status);
+            } else if (error.request) {
+                throw new Error('Server did not respond for URL ['+ url +']');
+            } else {
+                throw new Error('Error when accessing URL ['+ url +'] ' + error.message);
+            }
         }
-    });
+    }
+
+    /**
+    * The typescript code generator
+    * @return {String} the generated HTML string
+    */
+    async generateHTML () {
+        const {model, modelManager, options} = this;
+        modelManager.clearModelFiles();
+
+        modelManager.addModelFile(model, undefined, true);
+        modelManager.updateExternalModels();
+        const modelFiles = modelManager.getModelFiles();
+
+
+        let visitor = new HTMLFormVisitor ();
+        const param = {
+            fileWriter: new Writer(),
+            customClasses: options.customClasses,
+            timestamp: Date.now()
+
+        };
+        let result = '';
+        let res = {};
+        await modelFiles.forEach((file) => {
+            modelManager.modelFile = file;
+            modelManager.accept(visitor, param);
+            const text = param.fileWriter.getBuffer();
+            result += `\n${text}`;
+            res[file.namespace] = text;
+
+        });
+        return result;
     }
 
     /**
@@ -139,17 +152,21 @@ class FormGenerator {
         let visitor = new HTMLFormVisitor ();
         const param = {
             fileWriter: new Writer(),
-            customClasses: options.customClasses
-        };
+            customClasses: options.customClasses,
+            timestamp: Date.now()
 
+        };
+        let result = '';
+        let res = {};
         await modelFiles.forEach((file) => {
             modelManager.modelFile = file;
             modelManager.accept(visitor, param);
             const text = param.fileWriter.getBuffer();
-            fs.writeFileSync('out/xxxx.html', text);
+            result += `\n${text}`;
+            res[file.namespace] = text;
 
         });
-        return param.fileWriter.getBuffer();
+        return result;
     }
 
 }
