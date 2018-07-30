@@ -13,8 +13,6 @@
 */
 
 'use strict';
-
-const debug = require('debug')('hyperledger-composer');
 const fs = require('fs');
 const axios = require('axios');
 const ModelManager = require('composer-common').ModelManager;
@@ -136,7 +134,6 @@ class FormGenerator {
         modelManager.addModelFile(model, undefined, true);
         modelManager.updateExternalModels();
         const modelFiles = modelManager.getModelFiles();
-        debug('New Form created %s', modelFiles);
 
 
         let visitor = new HTMLFormVisitor ();

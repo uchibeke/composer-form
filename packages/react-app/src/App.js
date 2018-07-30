@@ -15,6 +15,8 @@
 import React, { Component } from 'react';
 import './App.css';
 // import constants from './constants';
+// const FormGenerator = require('composer-form');
+import {FormGenerator} from 'composer-form'
 const apiEndpoint = 'http://localhost:7777/api/form';
 const customFormClass = {
   field: 'form-group',
@@ -32,6 +34,17 @@ class App extends Component {
   componentDidMount () {
     // TODO: Replace with imported data from uploaded file or pasted model file content
     const file = "namespace org.accordproject.finance.bond import org.accordproject.organization.Organization from https://models.accordproject.org/organization.cto import org.accordproject.time.Duration from https://models.accordproject.org/time.cto import org.accordproject.money.CurrencyCode from https://models.accordproject.org/money.cto enum CouponType { o FIXED o FLOATING } concept PaymentFrequency { o Integer periodMultiplier o Duration period } /** * Definition of a Bond, based on the FpML schema: * http://www.fpml.org/spec/fpml-5-3-2-wd-2/html/reporting/schemaDocumentation/schemas/fpml-asset-5-3_xsd/elements/bond.html * */ concept Bond { o String[] instrumentId o String description optional o CurrencyCode currency optional o String[] exchangeId o String clearanceSystem optional o String definition optional o String seniority optional o CouponType couponType optional o Double couponRate optional o DateTime maturity o Double parValue o Double faceAmount o PaymentFrequency paymentFrequency o String dayCountFraction --> Organization issuer } asset BondAsset identified by ISINCode { o String ISINCode o Bond bond }";     
+    
+    const localFile = './samples/models/bond.cto';
+    const options = {
+        customClasses : {
+            field: 'form-group',
+            input: 'form-control',
+            label: 'control-label'
+        }
+
+    };
+    const form = FormGenerator.fromFile(localFile, options);
     this.getForm(file)
   }
 
