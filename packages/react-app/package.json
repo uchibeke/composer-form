@@ -8,8 +8,10 @@
   },
   "private": true,
   "dependencies": {
-    "composer-common": "^0.19.9",
+    "composer-form": "file:../main/",
     "react": "^16.4.1",
+    "react-bootstrap": "^0.32.1",
+    "react-bootstrap-tabs": "^1.0.2",
     "react-dom": "^16.4.1",
     "react-scripts": "1.1.4"
   },
