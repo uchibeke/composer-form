@@ -1,5 +1,29 @@
 {
 	"devDependencies": {
 		"lerna": "^2.11.0"
-	}
+	},
+	"name": "composer-form",
+	"description": "Hyperledger Composer Form for generating a web form from a composer modeling language type. You must install [Lerna](https://lernajs.io) to build this multi-package repository.",
+	"version": "0.0.12",
+	"private": false,
+	"scripts": {
+	  "install": "npm run bootstrap",
+	  "repoclean": "lerna clean",
+	  "bootstrap": "lerna bootstrap",
+	  "pretest": "npm run depcheck & npm run licchk",
+	  "licchk": "license-check-and-add",
+	  "test": "lerna run test"
+	},
+	"repository": {
+	  "type": "git",
+	  "url": "https://github.com/uchibeke/composer-form.git"
+	},
+	"keywords": [
+	  "blockchain",
+	  "hyperledger",
+	  "solutions"
+	],
+	"author": "Uchi Uchibeke",
+	"license": "Apache-2.0",
+	"dependencies": {}
 }
