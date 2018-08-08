@@ -1,19 +1,17 @@
 {
   "name": "composer-form",
-  "version": "0.1.0",
-  "description": "Hyperledger Composer Form, code for generating a web form from a composer modeling language type",
+  "version": "0.1.12",
+  "description": "Hyperledger Composer Form for generating a web form from a composer modeling language type",
   "engines": {
     "node": ">=8",
     "npm": ">=5"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
-    "composer-cli": "^0.19.11",
     "composer-common": "^0.19.9",
-    "debug": "2.6.2",
-    "express": "^4.16.3"
+    "debug": "2.6.2"
   },
   "scripts": {
     "pretest": "npm run lint",
@@ -108,10 +106,12 @@
       "test/**"
     ],
     "reporter": [
+      "text-lcov",
       "lcov",
       "text-summary",
       "html",
-      "json"
+      "json",
+      "text"
     ],
     "include": [
       "lib/**.js"
