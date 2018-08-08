@@ -15,7 +15,7 @@
 'use strict';
 
 /**
- * Hyperledger-Composer module. Hyperledger-Composer is a framework for creating
+ * Composer-Form module. Hyperledger-Composer is a framework for creating
  * blockchain backed digital networks and exchanging assets between participants
  * via processing transactions.
  * @module composer-form

@@ -16,7 +16,7 @@ A web-form generated from model types would allow transactions to be submitted (
 
 - Import and set up `composer-form` and generate a form
     ```js
-        import {FormGenerator} from `composer-form`
+        import {FormGenerator} from composer-form
         form = await FormGenerator.fromText(file, options);
     ```
 - `form` is the generated html form

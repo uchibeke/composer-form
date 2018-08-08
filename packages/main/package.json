@@ -1,11 +1,7 @@
 {
-  "name": "composer-form",
-  "version": "0.1.12",
+  "name": "hyperledger-composer-form",
+  "version": "0.0.24",
   "description": "Hyperledger Composer Form for generating a web form from a composer modeling language type",
-  "engines": {
-    "node": ">=8",
-    "npm": ">=5"
-  },
   "private": false,
   "dependencies": {
     "axios": "^0.18.0",
@@ -28,10 +24,14 @@
   "keywords": [
     "blockchain",
     "hyperledger",
-    "solutions"
+    "solutions",
+    "distributed ledger",
+    "form generator",
+    "composer",
+    "dlt"
   ],
-  "author": "Hyperledger Composer",
-  "license": "Apache-2.0",
+	"author": "Uchi Uchibeke",
+	"license": "Apache-2.0",
   "devDependencies": {
     "ajv": "6.1.1",
     "babel-preset-latest": "6.24.1",
@@ -122,5 +122,9 @@
     "branches": 75,
     "functions": 75,
     "lines": 75
-  }
+  },
+	"repository": {
+	  "type": "git",
+	  "url": "https://github.com/uchibeke/composer-form.git"
+	}
 }

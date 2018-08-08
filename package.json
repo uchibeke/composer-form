@@ -5,7 +5,7 @@
 	"name": "composer-form",
 	"description": "Hyperledger Composer Form for generating a web form from a composer modeling language type. You must install [Lerna](https://lernajs.io) to build this multi-package repository.",
 	"version": "0.0.12",
-	"private": false,
+	"private": true,
 	"scripts": {
 	  "install": "npm run bootstrap",
 	  "repoclean": "lerna clean",
