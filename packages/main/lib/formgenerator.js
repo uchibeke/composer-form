@@ -16,6 +16,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const ModelManager = require('composer-common').ModelManager;
+// const modelFile = require('composer-common').modelFile;
 const Writer = require('composer-common').Writer;
 const {HTMLFormVisitor} = require('./htmlformvisitor');
 /**
@@ -101,7 +102,7 @@ class FormGenerator {
     }
 
     /**
-    * The typescript code generator
+    * The html code generator
     * @return {String} the generated HTML string
     */
     async generateHTML () {
@@ -134,19 +135,21 @@ class FormGenerator {
     }
 
     /**
-    * The typescript code generator
+    * The html code generator
     * @private
     * @param {Object} model - The business network model text
     * @param {Object} options - form options
     * @return {String} the generated HTML string
     */
     static async generateHTML (model, options) {
+
+        // this.getClasses(model);
         let modelManager = new ModelManager();
         modelManager.clearModelFiles();
 
         modelManager.addModelFile(model, undefined, true);
         modelManager.updateExternalModels();
-        const modelFiles = modelManager.getModelFiles();
+        let modelFiles = modelManager.getModelFiles();
 
 
         let visitor = new HTMLFormVisitor ();
@@ -158,6 +161,8 @@ class FormGenerator {
         };
         let result = '';
         let res = {};
+        this.getClasses(model);
+        modelFiles = this.refinedModelFile(modelFiles);
         await modelFiles.forEach((file) => {
             modelManager.modelFile = file;
             modelManager.accept(visitor, param);
@@ -167,6 +172,46 @@ class FormGenerator {
 
         });
         return result;
+    }
+
+    /**
+    * The class name extractor
+    * @private
+    * @param {Object} model - The business network model text
+    * @return {Array} array of model names
+    */
+    static async getClasses (model) {
+        let modelManager = new ModelManager();
+        modelManager.clearModelFiles();
+
+        modelManager.addModelFile(model, undefined, true);
+        modelManager.updateExternalModels();
+        let modelFiles = modelManager.getModelFiles();
+
+        modelFiles = this.refinedModelFile(modelFiles);
+        let names = [];
+        await modelFiles.forEach((file) => {
+            file.getAllDeclarations().forEach((decl) => {
+                console.log(decl.modelFile.definitions);
+                console.log('------', '\n\n', '------');
+                names.push(decl.name);
+            });
+
+        });
+        console.log(names);
+        return names;
+    }
+
+    /**
+    * Removes the composer system model file
+    * @private
+    * @param {Array} files - Array of model files
+    * @return {Array} array of model files without the system model file
+    */
+    static refinedModelFile(files) {
+        return files.filter(file => {
+            return !file.namespace.endsWith('system');
+        });
     }
 
 }

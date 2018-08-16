@@ -34,7 +34,9 @@ const options = {
 
 class App extends Component {
   state = {
-    form: null
+    form: null,
+    fileClasses: [],
+    selectedClass: ''
   }
 
   componentDidMount () {
@@ -71,25 +73,52 @@ class App extends Component {
     this.setState({modelUrl: event.target.value});
   }
 
+  get submitBtn () {
+    const {customClasses} = options
+    return (
+      <input 
+        type="submit" 
+        value="Process" 
+        className={customClasses.button || 'btn btn-primary'}/>)
+  }
+
+  async modelFIleClasses (file, options, type) {
+    console.log("here")
+    let fileClasses;
+    if  (type === 'text') {
+      fileClasses = await FormGenerator.getClasses(file, options);
+    } else if (type === 'url') {
+      fileClasses = await FormGenerator.getClasses(file, options);
+    }
+    this.setState({
+      fileClasses
+    })
+  }
+
+  async handleTextAreaModelProcess(event) {
+    this.modelFIleClasses(this.state.modelFile, options, 'text')
+    event.preventDefault();
+  }
+
 
   render() {
-    const {form} = this.state
-    const {customClasses} = options
+    const {form, fileClasses} = this.state
 
     return (
       <div className="App container">
         <div className="row">
           <div className="col">
           <br></br>
-              
               <Tabs
-                headerStyle={{background:'#efefef'}} activeHeaderStyle={{background: 'white', 'border-top':'2px solid blue'}}
+                headerStyle={{background:'#efefef'}}
+                activeHeaderStyle={{background: 'white', 'border-top':'2px solid blue'}}
+                selected={0}
               >
                 <Tab  
                   label="Paste model file"
                 >
                   <br></br>
-                  <form onSubmit={this.handleTextAreaSubmit.bind(this)}>
+                  <form onSubmit={this.handleTextAreaModelProcess.bind(this)}>
                     <div className="form-group">
                       <textarea 
                         value={this.state.modelFile} 
@@ -97,10 +126,7 @@ class App extends Component {
                         className={'form-control Text-area'}
                         placeholder="Paste a model file"/>
                       <br></br>
-                      <input 
-                        type="submit" 
-                        value="Submit" 
-                        className={customClasses.button || 'btn btn-primary'}/>
+                      {this.submitBtn}
                     </div>
                   </form>
                 </Tab>
@@ -116,10 +142,7 @@ class App extends Component {
                         className={'form-control'}
                         placeholder="https://"/>
                       <br></br>
-                      <input 
-                        type="submit" 
-                        value="Submit" 
-                        className={customClasses.button || 'btn btn-primary'}/>
+                      {this.submitBtn}
                     </div>
                   </form>
                 </Tab>
@@ -131,6 +154,18 @@ class App extends Component {
                 </Tab>
               </Tabs>
               <hr></hr>
+              <div >
+                Select Class to generate.
+
+                {fileClasses.map((fileClass, index) =>
+                  <p>
+                    <strong>{fileClass} </strong> 
+                    <button className="btn btn-primary btn-xs">Generate form</button>
+                    
+                  </p>
+                )}
+              </div>
+              <hr></hr>
               <h2>Form</h2>
               <div dangerouslySetInnerHTML={{ __html: form }}> 
               </div>
@@ -140,5 +175,6 @@ class App extends Component {
     );
   }
 }
+
 
 export default App
